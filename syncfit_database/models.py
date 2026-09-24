@@ -51,6 +51,8 @@ class Profile(Base):
     goal_phase: Mapped[str | None] = mapped_column(String(30), nullable=True)
     modality: Mapped[str | None] = mapped_column(String(20), nullable=True)
     available_machines: Mapped[list] = mapped_column(JSON, default=list)
+    weekly_training_goal: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    rest_days_allowance: Mapped[int | None] = mapped_column(Integer, nullable=True)
     last_period_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     cycle_length_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
     gestation_week: Mapped[int | None] = mapped_column(Integer, nullable=True)
