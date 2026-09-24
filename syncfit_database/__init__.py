@@ -11,6 +11,8 @@ from .models import (
     CycleLog,
     EnergyCheckIn,
     ExerciseLoad,
+    Gym,
+    GymMachine,
     Profile,
     Routine,
     RoutineExercise,
@@ -39,4 +41,6 @@ __all__ = [
     "RoutineExercise",
     "SupplementIntake",
     "ShareLink",
+    "Gym",
+    "GymMachine",
 ]
