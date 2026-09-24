@@ -51,6 +51,7 @@ class Profile(Base):
     goal_phase: Mapped[str | None] = mapped_column(String(30), nullable=True)
     modality: Mapped[str | None] = mapped_column(String(20), nullable=True)
     available_machines: Mapped[list] = mapped_column(JSON, default=list)
+    symptoms: Mapped[list] = mapped_column(JSON, default=list)
     current_supplements: Mapped[list] = mapped_column(JSON, default=list)
     supplement_macros: Mapped[list] = mapped_column(JSON, default=list)
     weight_unit: Mapped[str | None] = mapped_column(String(4), nullable=True)
