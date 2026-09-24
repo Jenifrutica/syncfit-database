@@ -188,4 +188,15 @@ __all__ = [
     "TelemetrySample",
     "Routine",
     "RoutineExercise",
+    "SupplementIntake",
 ]
+
+class SupplementIntake(Base):
+    __tablename__ = "supplement_intakes"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    supplement_id: Mapped[str] = mapped_column(String(80))
+    date: Mapped[date] = mapped_column(Date, index=True)
+    taken: Mapped[bool] = mapped_column(default=False)
+
