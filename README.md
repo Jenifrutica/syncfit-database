@@ -62,3 +62,10 @@ alembic upgrade head
 ```bash
 pytest        # uses a temporary SQLite database
 ```
+
+## Helper scripts
+
+```bash
+./scripts/up.sh      # start PostgreSQL (localhost:5432, syncfit/syncfit/syncfit)
+./scripts/down.sh    # stop it
+```
