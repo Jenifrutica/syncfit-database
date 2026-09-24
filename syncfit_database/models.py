@@ -52,6 +52,8 @@ class Profile(Base):
     modality: Mapped[str | None] = mapped_column(String(20), nullable=True)
     available_machines: Mapped[list] = mapped_column(JSON, default=list)
     symptoms: Mapped[list] = mapped_column(JSON, default=list)
+    pain_levels: Mapped[dict] = mapped_column(JSON, default=dict)
+    symptom_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     current_supplements: Mapped[list] = mapped_column(JSON, default=list)
     supplement_macros: Mapped[list] = mapped_column(JSON, default=list)
     weight_unit: Mapped[str | None] = mapped_column(String(4), nullable=True)
