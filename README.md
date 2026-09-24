@@ -94,3 +94,11 @@ tips), `supplement_intakes`, `share_links`.
 `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`.
 
 **Run tests.** `pytest` (SQLite).
+
+
+## Roles and gyms
+
+- `users.role`: `ATHLETE` (default) | `GYM_ADMIN` | `SUPER_ADMIN`.
+- Tables `gyms` (name, code, owner_user_id) and `gym_machines` (name, purpose,
+  image_url, weight_factor). `profiles.active_gym_id` links an athlete to a gym.
+- Adding columns to a running DB: `ALTER TABLE ... ADD COLUMN IF NOT EXISTS ...`.
