@@ -69,3 +69,28 @@ pytest        # uses a temporary SQLite database
 ./scripts/up.sh      # start PostgreSQL (localhost:5432, syncfit/syncfit/syncfit)
 ./scripts/down.sh    # stop it
 ```
+
+## Context for a new session
+
+**What it is.** Persistence schema (shared by backend). **PostgreSQL** in prod,
+**SQLite** for dev/tests, SQLAlchemy 2.0.
+
+**Layout.** `syncfit_database/models.py` (tables), `database.py` (`Database`,
+session_scope), `alembic/`, `docker-compose.yml`, `scripts/up.sh`/`down.sh`.
+
+**Tables.** `users`, `profiles` (language, height/weight, body_fat_pct,
+daily_calories, objective, goal_phase, modality, last_period_date,
+cycle_length_days, gestation_week, available_machines, current_supplements,
+supplement_macros, symptoms, weekly_training_goal, rest_days_allowance,
+weight_unit, photo_url), `exercise_loads`, `energy_checkins`, `cycle_logs`,
+`sessions`, `telemetry_samples`, `routines`, `routine_exercises` (sets, how_to,
+tips), `supplement_intakes`, `share_links`.
+
+**Env.** `SYNCFIT_DATABASE_URL` (default `postgresql+psycopg://syncfit:syncfit@localhost:5432/syncfit`).
+
+**Run DB.** `./scripts/up.sh` (uses docker compose or `docker run`). Migrations:
+`alembic revision --autogenerate -m ...` then `alembic upgrade head` (dev uses
+`create_all`). When adding columns to a running DB, apply an idempotent
+`ALTER TABLE ... ADD COLUMN IF NOT EXISTS`.
+
+**Run tests.** `pytest` (SQLite).
