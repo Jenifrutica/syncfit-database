@@ -30,6 +30,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(255))
     display_name: Mapped[str] = mapped_column(String(120))
+    role: Mapped[str] = mapped_column(String(20), default="ATHLETE")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
     profile: Mapped["Profile"] = relationship(back_populates="user", uselist=False)
