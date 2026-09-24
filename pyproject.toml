@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "syncfit-database"
+version = "0.1.0"
+description = "SyncFit Edge database schema and models (PostgreSQL + SQLAlchemy)."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    "sqlalchemy>=2.0",
+]
+
+[project.optional-dependencies]
+postgres = ["psycopg[binary]>=3.1"]
+migrations = ["alembic>=1.13"]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.setuptools]
+packages = ["syncfit_database"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
