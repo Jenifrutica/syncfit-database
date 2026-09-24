@@ -15,6 +15,7 @@ from .models import (
     Routine,
     RoutineExercise,
     SessionRecord,
+    ShareLink,
     SupplementIntake,
     TelemetrySample,
     User,
@@ -37,4 +38,5 @@ __all__ = [
     "Routine",
     "RoutineExercise",
     "SupplementIntake",
+    "ShareLink",
 ]

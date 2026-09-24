@@ -51,6 +51,9 @@ class Profile(Base):
     goal_phase: Mapped[str | None] = mapped_column(String(30), nullable=True)
     modality: Mapped[str | None] = mapped_column(String(20), nullable=True)
     available_machines: Mapped[list] = mapped_column(JSON, default=list)
+    current_supplements: Mapped[list] = mapped_column(JSON, default=list)
+    weight_unit: Mapped[str | None] = mapped_column(String(4), nullable=True)
+    photo_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     weekly_training_goal: Mapped[int | None] = mapped_column(Integer, nullable=True)
     rest_days_allowance: Mapped[int | None] = mapped_column(Integer, nullable=True)
     last_period_date: Mapped[date | None] = mapped_column(Date, nullable=True)
@@ -191,6 +194,7 @@ __all__ = [
     "Routine",
     "RoutineExercise",
     "SupplementIntake",
+    "ShareLink",
 ]
 
 class SupplementIntake(Base):
@@ -201,4 +205,17 @@ class SupplementIntake(Base):
     supplement_id: Mapped[str] = mapped_column(String(80))
     date: Mapped[date] = mapped_column(Date, index=True)
     taken: Mapped[bool] = mapped_column(default=False)
+
+class ShareLink(Base):
+    __tablename__ = "share_links"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    token: Mapped[str] = mapped_column(String(40), unique=True, index=True)
+    owner_user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    role: Mapped[str] = mapped_column(String(20))
+    label: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    permissions: Mapped[list] = mapped_column(JSON, default=list)
+    active: Mapped[bool] = mapped_column(default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
 
