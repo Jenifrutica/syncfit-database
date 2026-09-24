@@ -58,6 +58,7 @@ class Profile(Base):
     supplement_macros: Mapped[list] = mapped_column(JSON, default=list)
     weight_unit: Mapped[str | None] = mapped_column(String(4), nullable=True)
     photo_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    active_gym_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
     weekly_training_goal: Mapped[int | None] = mapped_column(Integer, nullable=True)
     rest_days_allowance: Mapped[int | None] = mapped_column(Integer, nullable=True)
     last_period_date: Mapped[date | None] = mapped_column(Date, nullable=True)
@@ -201,6 +202,8 @@ __all__ = [
     "RoutineExercise",
     "SupplementIntake",
     "ShareLink",
+    "Gym",
+    "GymMachine",
 ]
 
 class SupplementIntake(Base):
@@ -225,3 +228,26 @@ class ShareLink(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
 
+class Gym(Base):
+    __tablename__ = "gyms"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    name: Mapped[str] = mapped_column(String(120))
+    code: Mapped[str] = mapped_column(String(12), unique=True, index=True)
+    owner_user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+    machines: Mapped[list["GymMachine"]] = relationship(back_populates="gym", cascade="all, delete-orphan")
+
+
+class GymMachine(Base):
+    __tablename__ = "gym_machines"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    gym_id: Mapped[str] = mapped_column(ForeignKey("gyms.id"), index=True)
+    name: Mapped[str] = mapped_column(String(120))
+    purpose: Mapped[str | None] = mapped_column(Text, nullable=True)
+    image_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    weight_factor: Mapped[float] = mapped_column(Float, default=1.0)
+
+    gym: Mapped[Gym] = relationship(back_populates="machines")
