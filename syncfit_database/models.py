@@ -52,6 +52,7 @@ class Profile(Base):
     modality: Mapped[str | None] = mapped_column(String(20), nullable=True)
     available_machines: Mapped[list] = mapped_column(JSON, default=list)
     current_supplements: Mapped[list] = mapped_column(JSON, default=list)
+    supplement_macros: Mapped[list] = mapped_column(JSON, default=list)
     weight_unit: Mapped[str | None] = mapped_column(String(4), nullable=True)
     photo_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     weekly_training_goal: Mapped[int | None] = mapped_column(Integer, nullable=True)
@@ -179,6 +180,8 @@ class RoutineExercise(Base):
     image_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     sets: Mapped[list] = mapped_column(JSON, default=list)
     description: Mapped[dict] = mapped_column(JSON, default=dict)
+    how_to: Mapped[dict] = mapped_column(JSON, default=dict)
+    tips: Mapped[list] = mapped_column(JSON, default=list)
 
     routine: Mapped[Routine] = relationship(back_populates="items")
 
