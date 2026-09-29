@@ -23,6 +23,30 @@ the single definition of the schema shared by the backend and any other service.
 | `sessions` | Training sessions with the deterministic decision. |
 | `telemetry_samples` | Telemetry associated to a session. |
 | `routines` / `routine_exercises` | Generated routines and their exercises, in order. |
+| `supplement_intakes` | Daily supplement intake tracking per user. |
+| `share_links` | Read-only share tokens with roles/permissions. |
+| `gyms` / `gym_machines` | Gyms and the machines added by their admin. |
+| `gym_memberships` | Join table: one row per (profile, gym) pair the athlete joined. |
+
+## Data structures
+
+The persistence layer is built on indexed, set-like relations:
+
+| Structure | Where | How it is implemented | Purpose |
+|-----------|-------|-----------------------|---------|
+| **B-tree index (composite)** | `gym_memberships` | `UniqueConstraint("profile_id", "gym_id", name="uq_gym_membership")` | Keeps joins idempotent and turns "which gyms did this profile join?" into an O(log n) index scan. |
+| **Set semantics** | `gym_memberships` | one row per pair, no duplicates | A membership is a member of a set of `(profile, gym)` pairs. |
+| **Foreign-key indexes** | `gym_memberships.profile_id`, `gym_memberships.gym_id` | `index=True` on both columns | O(log n) lookups in either direction (profile → gyms, gym → members). |
+| **Cascade collection** | `Profile.memberships` | `relationship(..., cascade="all, delete-orphan")` | Deleting a profile removes its memberships atomically. |
+| **Localized JSON** | `gym_machines.name` / `purpose` | `JSON` columns holding `{"en","es","zh"}` | Machine text typed in any language is translated and shown per locale. |
+| **JSON array index** | `gym_machines.exercise_ids` | `JSON` list of catalog exercise ids | Lets the backend prefer gym machines when building a routine. |
+
+> `create_all` (via `Database.init_db()`) creates missing tables on startup. Because
+> `create_all` never *alters* existing tables, `init_db()` first runs a light
+> **additive schema reconcile**: missing columns are added with
+> `ALTER TABLE ADD COLUMN` (nullable, no data loss) plus an index when the column
+> is indexed/unique (e.g. `users.document_id`). This self-heals a stale dev
+> database without dropping data. Production must use Alembic instead.
 
 ## Usage
 

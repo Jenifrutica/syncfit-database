@@ -13,6 +13,7 @@ from .models import (
     ExerciseLoad,
     Gym,
     GymMachine,
+    GymMembership,
     Profile,
     Routine,
     RoutineExercise,
@@ -43,4 +44,5 @@ __all__ = [
     "ShareLink",
     "Gym",
     "GymMachine",
+    "GymMembership",
 ]

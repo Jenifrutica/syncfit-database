@@ -9,7 +9,17 @@ from __future__ import annotations
 import uuid
 from datetime import date, datetime, timezone
 
-from sqlalchemy import JSON, Date, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    JSON,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
@@ -30,7 +40,9 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(255))
     display_name: Mapped[str] = mapped_column(String(120))
+    document_id: Mapped[str | None] = mapped_column(String(20), nullable=True, unique=True, index=True)
     role: Mapped[str] = mapped_column(String(20), default="ATHLETE")
+    active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
     profile: Mapped["Profile"] = relationship(back_populates="user", uselist=False)
@@ -73,6 +85,9 @@ class Profile(Base):
 
     user: Mapped[User] = relationship(back_populates="profile")
     loads: Mapped[list["ExerciseLoad"]] = relationship(
+        back_populates="profile", cascade="all, delete-orphan"
+    )
+    memberships: Mapped[list["GymMembership"]] = relationship(
         back_populates="profile", cascade="all, delete-orphan"
     )
 
@@ -187,6 +202,10 @@ class RoutineExercise(Base):
     description: Mapped[dict] = mapped_column(JSON, default=dict)
     how_to: Mapped[dict] = mapped_column(JSON, default=dict)
     tips: Mapped[list] = mapped_column(JSON, default=list)
+    machine_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    machine_name: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    movement_pattern: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    rationale: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     routine: Mapped[Routine] = relationship(back_populates="items")
 
@@ -205,6 +224,7 @@ __all__ = [
     "ShareLink",
     "Gym",
     "GymMachine",
+    "GymMembership",
 ]
 
 class SupplementIntake(Base):
@@ -242,13 +262,46 @@ class Gym(Base):
 
 
 class GymMachine(Base):
+    """A machine added by a gym admin.
+
+    ``name`` and ``purpose`` are stored as localized JSON
+    (``{"en": "...", "es": "...", "zh": "..."}``) so a machine typed in Spanish
+    can be shown in the athlete's language. ``exercise_ids`` indexes which
+    catalog exercises the machine covers (a JSON array), used to prefer gym
+    machines when building a routine.
+    """
+
     __tablename__ = "gym_machines"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
     gym_id: Mapped[str] = mapped_column(ForeignKey("gyms.id"), index=True)
-    name: Mapped[str] = mapped_column(String(120))
-    purpose: Mapped[str | None] = mapped_column(Text, nullable=True)
+    name: Mapped[dict] = mapped_column(JSON, default=dict)
+    purpose: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    exercise_ids: Mapped[list] = mapped_column(JSON, default=list)
+    equipment_key: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    equipment_type: Mapped[str | None] = mapped_column(String(20), nullable=True)
     image_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     weight_factor: Mapped[float] = mapped_column(Float, default=1.0)
 
     gym: Mapped[Gym] = relationship(back_populates="machines")
+
+
+class GymMembership(Base):
+    """Join table: one row per (profile, gym) pair.
+
+    The unique constraint keeps joins idempotent and gives an index that makes
+    "which gyms did this profile join?" an O(log n) lookup.
+    """
+
+    __tablename__ = "gym_memberships"
+    __table_args__ = (
+        UniqueConstraint("profile_id", "gym_id", name="uq_gym_membership"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    profile_id: Mapped[str] = mapped_column(ForeignKey("profiles.id"), index=True)
+    gym_id: Mapped[str] = mapped_column(ForeignKey("gyms.id"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+    profile: Mapped[Profile] = relationship(back_populates="memberships")
+    gym: Mapped[Gym] = relationship()

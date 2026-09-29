@@ -1,10 +1,16 @@
 from datetime import date, datetime, timezone
 
+import pytest
+from sqlalchemy.exc import IntegrityError
+
 from syncfit_database import (
     CycleLog,
     Database,
     EnergyCheckIn,
     ExerciseLoad,
+    Gym,
+    GymMachine,
+    GymMembership,
     Profile,
     Routine,
     RoutineExercise,
@@ -118,3 +124,91 @@ def test_session_telemetry_and_routine(tmp_path):
         routine = session.query(Routine).filter_by(user_id=user_id).one()
         assert routine.items[0].exercise_id == "goblet-squat"
         assert routine.items[0].sets[0]["type"] == "EFFECTIVE"
+
+
+def test_gym_memberships(tmp_path):
+    db = make_db(tmp_path)
+    with db.session_scope() as session:
+        owner = User(email="admin@example.com", password_hash="x", display_name="Admin")
+        gym = Gym(name="Asgard", code="A1B2C3", owner_user_id="pending")
+        gym.machines.append(
+            GymMachine(
+                name={"en": "Hip thrust", "es": "Hip thrust"},
+                purpose={"en": "Glutes"},
+                exercise_ids=["hip-thrust"],
+                weight_factor=1.4,
+            )
+        )
+        athlete = User(email="d@example.com", password_hash="x", display_name="D")
+        profile = Profile(user=athlete, modality="MENSTRUAL_CYCLE")
+        session.add(owner)
+        session.add(gym)
+        session.add(profile)
+        session.flush()
+        gym.owner_user_id = owner.id
+        profile.memberships.append(GymMembership(gym_id=gym.id))
+        profile_id = profile.id
+        gym_id = gym.id
+
+    with db.session_scope() as session:
+        profile = session.query(Profile).filter_by(id=profile_id).one()
+        assert len(profile.memberships) == 1
+        assert profile.memberships[0].gym_id == gym_id
+        machine = profile.memberships[0].gym.machines[0]
+        assert machine.name["en"] == "Hip thrust"
+        assert machine.exercise_ids == ["hip-thrust"]
+
+    # A duplicate (profile_id, gym_id) is rejected by the unique constraint.
+    with pytest.raises(IntegrityError):
+        with db.session_scope() as session:
+            session.add(GymMembership(profile_id=profile_id, gym_id=gym_id))
+            session.flush()
+
+
+def test_init_db_adds_missing_columns_without_data_loss(tmp_path):
+    from sqlalchemy import text
+
+    db = Database(f"sqlite:///{tmp_path}/drift.db")
+    # Simulate a stale table that is missing modeled columns, with a row in it.
+    with db.engine.begin() as conn:
+        conn.execute(text("CREATE TABLE gym_machines (id VARCHAR PRIMARY KEY, gym_id VARCHAR)"))
+        conn.execute(text("INSERT INTO gym_machines (id, gym_id) VALUES ('m1', 'g1')"))
+    added = db.init_db()
+    assert any(name.startswith("gym_machines.") for name in added)
+    # The row survives and the full schema is queryable.
+    with db.session_scope() as session:
+        assert session.query(GymMachine).count() == 1
+
+
+def test_init_db_adds_document_id_column(tmp_path):
+    from sqlalchemy import text
+
+    db = Database(f"sqlite:///{tmp_path}/doc.db")
+    with db.engine.begin() as conn:
+        conn.execute(
+            text("CREATE TABLE users (id VARCHAR PRIMARY KEY, email VARCHAR, password_hash VARCHAR, display_name VARCHAR, role VARCHAR)")
+        )
+    added = db.init_db()
+    assert "users.document_id" in added
+    with db.session_scope() as session:
+        user = User(email="x@y.dev", password_hash="h", display_name="X", document_id="10203040")
+        session.add(user)
+    with db.session_scope() as session:
+        assert session.query(User).filter_by(document_id="10203040").one().email == "x@y.dev"
+
+
+def test_user_active_flag_and_gym_equipment(tmp_path):
+    db = make_db(tmp_path)
+    with db.session_scope() as session:
+        user = User(email="act@example.com", password_hash="x", display_name="Act")
+        session.add(user)
+        gym = Gym(name="Eq", code="EQ1", owner_user_id="x")
+        gym.machines.append(GymMachine(name={"en": "Flat bench"}, equipment_key="bench", equipment_type="BENCH"))
+        session.add(gym)
+        session.flush()
+        user_id = user.id
+    with db.session_scope() as session:
+        assert session.query(User).filter_by(id=user_id).one().active is True
+        machine = session.query(GymMachine).one()
+        assert machine.equipment_key == "bench"
+        assert machine.equipment_type == "BENCH"
