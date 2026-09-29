@@ -94,6 +94,24 @@ pytest        # uses a temporary SQLite database
 ./scripts/down.sh    # stop it
 ```
 
+## Handoff for the team
+
+**Role.** Single definition of the persistence schema (SQLAlchemy 2.0). Postgres
+in prod, SQLite in dev/tests.
+
+**Run / test.** `bash scripts/up.sh` (Postgres) · `pytest` (SQLite).
+
+**Entry points.** `Database(url)`, `get_database()`, `Database.init_db()`,
+`session_scope()`. Models (13 tables): users (roles, `active`, `document_id`),
+profiles, exercise_loads, energy_checkins, cycle_logs, sessions,
+telemetry_samples, routines, routine_exercises (with `movement_pattern`,
+`rationale`, machine fields), supplement_intakes, share_links, gyms,
+gym_machines (`equipment_key`/`equipment_type`), gym_memberships.
+
+**Note.** `init_db()` runs an **additive reconcile** (`ALTER TABLE ADD COLUMN`,
+booleans `DEFAULT true`) so a stale dev DB self-heals without data loss. Use
+Alembic in production.
+
 ## Context for a new session
 
 **What it is.** Persistence schema (shared by backend). **PostgreSQL** in prod,
