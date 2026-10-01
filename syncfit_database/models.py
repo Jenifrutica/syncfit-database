@@ -43,6 +43,9 @@ class User(Base):
     document_id: Mapped[str | None] = mapped_column(String(20), nullable=True, unique=True, index=True)
     role: Mapped[str] = mapped_column(String(20), default="ATHLETE")
     active: Mapped[bool] = mapped_column(default=True)
+    # Bumped on logout: every JWT carries the version it was issued with, so
+    # incrementing it revokes all of the user's outstanding tokens.
+    token_version: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
     profile: Mapped["Profile"] = relationship(back_populates="user", uselist=False)
