@@ -212,3 +212,25 @@ def test_user_active_flag_and_gym_equipment(tmp_path):
         machine = session.query(GymMachine).one()
         assert machine.equipment_key == "bench"
         assert machine.equipment_type == "BENCH"
+
+
+def test_user_token_version_defaults_to_zero_and_is_reconciled(tmp_path):
+    from sqlalchemy import text
+
+    db = make_db(tmp_path)
+    with db.session_scope() as session:
+        session.add(User(email="tv@example.com", password_hash="x", display_name="Tv"))
+    with db.session_scope() as session:
+        user = session.query(User).filter_by(email="tv@example.com").one()
+        assert user.token_version == 0
+        user.token_version += 1
+    with db.session_scope() as session:
+        assert session.query(User).filter_by(email="tv@example.com").one().token_version == 1
+
+    # A users table created before the column existed gets it added (rows keep NULL).
+    stale = Database(f"sqlite:///{tmp_path}/stale.db")
+    with stale.engine.begin() as conn:
+        conn.execute(
+            text("CREATE TABLE users (id VARCHAR PRIMARY KEY, email VARCHAR, password_hash VARCHAR, display_name VARCHAR, role VARCHAR)")
+        )
+    assert "users.token_version" in stale.init_db()
