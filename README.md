@@ -144,3 +144,11 @@ tips), `supplement_intakes`, `share_links`.
 - Tables `gyms` (name, code, owner_user_id) and `gym_machines` (name, purpose,
   image_url, weight_factor). `profiles.active_gym_id` links an athlete to a gym.
 - Adding columns to a running DB: `ALTER TABLE ... ADD COLUMN IF NOT EXISTS ...`.
+
+## Roadmap · Qué falta (español)
+
+> Estado: **modelos completos**.
+
+- **Falta la 1ª migración de Alembic** (`alembic/versions/` está vacío; hoy se usa `create_all` + reconciliación aditiva).
+- Añadir `.gitkeep` en `alembic/versions/`.
+- (Opcional) Tests para `gyms`, `gym_machines`, `share_links`, roles.
