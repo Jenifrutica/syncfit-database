@@ -234,3 +234,22 @@ def test_user_token_version_defaults_to_zero_and_is_reconciled(tmp_path):
             text("CREATE TABLE users (id VARCHAR PRIMARY KEY, email VARCHAR, password_hash VARCHAR, display_name VARCHAR, role VARCHAR)")
         )
     assert "users.token_version" in stale.init_db()
+
+
+def test_app_option_is_unique_per_category_and_ordered(tmp_path):
+    from syncfit_database import AppOption
+
+    db = make_db(tmp_path)
+    with db.session_scope() as s:
+        s.add(AppOption(category="routine_time", value="60", labels={"en": "60 min"}, sort_order=2))
+        s.add(AppOption(category="routine_time", value="30", labels={"en": "30 min"}, sort_order=1))
+        s.add(AppOption(category="objective", value="60", labels={"en": "Other"}))
+    with db.session_scope() as s:
+        times = s.query(AppOption).filter_by(category="routine_time").order_by(AppOption.sort_order).all()
+        assert [o.value for o in times] == ["30", "60"]
+        assert times[0].active is True
+
+    # A repeated (category, value) pair is rejected by the unique constraint.
+    with pytest.raises(IntegrityError):
+        with db.session_scope() as s:
+            s.add(AppOption(category="routine_time", value="30"))
