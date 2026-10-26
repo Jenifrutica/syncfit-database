@@ -252,6 +252,24 @@ class ShareLink(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
 
+class AppOption(Base):
+    """A selectable value of the app (muscle group, objective, routine length...).
+
+    Kept in the database so the options can change without redeploying the
+    frontend. `labels` maps a language code ("en", "es", "zh") to its text.
+    """
+
+    __tablename__ = "app_options"
+    __table_args__ = (UniqueConstraint("category", "value", name="uq_app_option_category_value"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    category: Mapped[str] = mapped_column(String(40), index=True)
+    value: Mapped[str] = mapped_column(String(60))
+    labels: Mapped[dict] = mapped_column(JSON, default=dict)
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    active: Mapped[bool] = mapped_column(default=True)
+
+
 class Gym(Base):
     __tablename__ = "gyms"
 

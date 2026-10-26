@@ -8,6 +8,7 @@ service.
 from .base import Base
 from .database import Database, get_database
 from .models import (
+    AppOption,
     CycleLog,
     EnergyCheckIn,
     ExerciseLoad,
@@ -45,4 +46,5 @@ __all__ = [
     "Gym",
     "GymMachine",
     "GymMembership",
+    "AppOption",
 ]
