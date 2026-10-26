@@ -25,6 +25,7 @@ the single definition of the schema shared by the backend and any other service.
 | `routines` / `routine_exercises` | Generated routines and their exercises, in order. |
 | `supplement_intakes` | Daily supplement intake tracking per user. |
 | `share_links` | Read-only share tokens with roles/permissions. |
+| `app_options` | Selectable values of the app (muscle groups, objectives, routine lengths...) with per-language labels, so they can change without redeploying the frontend. |
 | `gyms` / `gym_machines` | Gyms and the machines added by their admin. |
 | `gym_memberships` | Join table: one row per (profile, gym) pair the athlete joined. |
 
@@ -102,10 +103,10 @@ in prod, SQLite in dev/tests.
 **Run / test.** `bash scripts/up.sh` (Postgres) · `pytest` (SQLite).
 
 **Entry points.** `Database(url)`, `get_database()`, `Database.init_db()`,
-`session_scope()`. Models (13 tables): users (roles, `active`, `document_id`),
+`session_scope()`. Models (14 tables): users (roles, `active`, `document_id`),
 profiles, exercise_loads, energy_checkins, cycle_logs, sessions,
 telemetry_samples, routines, routine_exercises (with `movement_pattern`,
-`rationale`, machine fields), supplement_intakes, share_links, gyms,
+`rationale`, machine fields), supplement_intakes, share_links, app_options, gyms,
 gym_machines (`equipment_key`/`equipment_type`), gym_memberships.
 
 **Note.** `init_db()` runs an **additive reconcile** (`ALTER TABLE ADD COLUMN`,
