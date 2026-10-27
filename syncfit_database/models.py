@@ -207,6 +207,8 @@ class RoutineExercise(Base):
     sets: Mapped[list] = mapped_column(JSON, default=list)
     description: Mapped[dict] = mapped_column(JSON, default=dict)
     how_to: Mapped[dict] = mapped_column(JSON, default=dict)
+    setup: Mapped[dict] = mapped_column(JSON, default=dict)
+    pregnancy_tip: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     tips: Mapped[list] = mapped_column(JSON, default=list)
     machine_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
     machine_name: Mapped[dict | None] = mapped_column(JSON, nullable=True)
