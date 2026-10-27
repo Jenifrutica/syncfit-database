@@ -70,6 +70,9 @@ class Profile(Base):
     symptoms: Mapped[list] = mapped_column(JSON, default=list)
     pain_levels: Mapped[dict] = mapped_column(JSON, default=dict)
     symptom_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Movement patterns the symptom analyzer inferred from the free-text notes,
+    # so the routine avoids them even when no catalog symptom covers them.
+    symptom_avoid_patterns: Mapped[list] = mapped_column(JSON, default=list)
     current_supplements: Mapped[list] = mapped_column(JSON, default=list)
     supplement_macros: Mapped[list] = mapped_column(JSON, default=list)
     weight_unit: Mapped[str | None] = mapped_column(String(4), nullable=True)

@@ -26,6 +26,24 @@ def make_db(tmp_path):
     return db
 
 
+def test_profile_stores_symptom_avoid_patterns(tmp_path):
+    db = make_db(tmp_path)
+    with db.session_scope() as session:
+        user = User(email="patterns@example.com", password_hash="x", display_name="P")
+        profile = Profile(
+            user=user,
+            symptom_notes="me duele el hombro al levantar el brazo",
+            symptom_avoid_patterns=["overhead_press", "lateral_raise"],
+        )
+        session.add(profile)
+        session.flush()
+        profile_id = profile.id
+
+    with db.session_scope() as session:
+        saved = session.query(Profile).filter_by(id=profile_id).one()
+        assert saved.symptom_avoid_patterns == ["overhead_press", "lateral_raise"]
+
+
 def test_user_profile_and_loads(tmp_path):
     db = make_db(tmp_path)
     with db.session_scope() as session:
