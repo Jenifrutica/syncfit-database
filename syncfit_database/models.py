@@ -275,6 +275,27 @@ class AppOption(Base):
     active: Mapped[bool] = mapped_column(default=True)
 
 
+class CatalogItem(Base):
+    """Configurable catalog data: exercises, machines, symptoms, supplements.
+
+    The validated JSON payload is stored as-is, so adding a field never needs a
+    migration. `kind` separates the four catalogs and `active` retires an item
+    without breaking routines or loads that still reference it. The packaged
+    JSON is only the seed; the database is the source of truth.
+    """
+
+    __tablename__ = "catalog_items"
+    __table_args__ = (UniqueConstraint("kind", "external_id", name="uq_catalog_kind_external"),)
+
+    id: Mapped[str] = mapped_column(String(160), primary_key=True)
+    kind: Mapped[str] = mapped_column(String(20), index=True)
+    external_id: Mapped[str] = mapped_column(String(120), index=True)
+    payload: Mapped[dict] = mapped_column(JSON, default=dict)
+    active: Mapped[bool] = mapped_column(default=True)
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
+
+
 class Gym(Base):
     __tablename__ = "gyms"
 

@@ -9,6 +9,7 @@ from .base import Base
 from .database import Database, get_database
 from .models import (
     AppOption,
+    CatalogItem,
     CycleLog,
     EnergyCheckIn,
     ExerciseLoad,
@@ -47,4 +48,5 @@ __all__ = [
     "GymMachine",
     "GymMembership",
     "AppOption",
+    "CatalogItem",
 ]
