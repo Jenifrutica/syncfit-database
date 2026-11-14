@@ -16,6 +16,7 @@ from .models import (
     Gym,
     GymMachine,
     GymMembership,
+    PasswordResetToken,
     Profile,
     Routine,
     RoutineExercise,
@@ -47,6 +48,7 @@ __all__ = [
     "Gym",
     "GymMachine",
     "GymMembership",
+    "PasswordResetToken",
     "AppOption",
     "CatalogItem",
 ]

@@ -352,3 +352,16 @@ class GymMembership(Base):
 
     profile: Mapped[Profile] = relationship(back_populates="memberships")
     gym: Mapped[Gym] = relationship()
+
+
+class PasswordResetToken(Base):
+    """Single-use token for "forgot my password" (only its hash is stored)."""
+
+    __tablename__ = "password_reset_tokens"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
