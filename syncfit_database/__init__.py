@@ -8,6 +8,7 @@ service.
 from .base import Base
 from .database import Database, get_database
 from .models import (
+    AthleteMachine,
     AppOption,
     CatalogItem,
     CycleLog,
@@ -30,6 +31,7 @@ from .models import (
 __version__ = "0.1.0"
 
 __all__ = [
+    "AthleteMachine",
     "__version__",
     "Base",
     "Database",

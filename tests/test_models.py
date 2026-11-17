@@ -271,3 +271,23 @@ def test_app_option_is_unique_per_category_and_ordered(tmp_path):
     with pytest.raises(IntegrityError):
         with db.session_scope() as s:
             s.add(AppOption(category="routine_time", value="30"))
+
+
+def test_option_meta_and_athlete_machine(tmp_path):
+    from syncfit_database import AppOption, AthleteMachine, Database, Profile, User
+
+    db = Database(f"sqlite:///{tmp_path / 'meta.db'}")
+    db.init_db()
+    with db.session_scope() as session:
+        session.add(AppOption(category="objective", value="MOBILITY", labels={"en": "Mobility"},
+                              meta={"sets": 2, "reps": 15}))
+        user = User(email="m@x.dev", password_hash="x", display_name="M", role="ATHLETE")
+        session.add(user)
+        session.flush()
+        profile = Profile(user_id=user.id)
+        session.add(profile)
+        session.flush()
+        session.add(AthleteMachine(profile_id=profile.id, name={"es": "Prensa vieja"}, exercise_ids=["leg_press"]))
+    with db.session_scope() as session:
+        assert session.query(AppOption).filter_by(value="MOBILITY").one().meta == {"sets": 2, "reps": 15}
+        assert session.query(AthleteMachine).one().name == {"es": "Prensa vieja"}

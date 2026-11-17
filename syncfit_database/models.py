@@ -273,6 +273,9 @@ class AppOption(Base):
     labels: Mapped[dict] = mapped_column(JSON, default=dict)
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
     active: Mapped[bool] = mapped_column(default=True)
+    # Per-option parameters the engines read (e.g. an objective's sets/reps/rest
+    # or a goal phase's calorie factor), so a new option works without code.
+    meta: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
 
 class CatalogItem(Base):
@@ -331,6 +334,23 @@ class GymMachine(Base):
     weight_factor: Mapped[float] = mapped_column(Float, default=1.0)
 
     gym: Mapped[Gym] = relationship(back_populates="machines")
+
+
+class AthleteMachine(Base):
+    """A machine an athlete typed by name because it is not in the catalog.
+
+    Its id joins ``Profile.available_machines`` next to catalog machine ids, so
+    the routine engine treats both the same way.
+    """
+
+    __tablename__ = "athlete_machines"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    profile_id: Mapped[str] = mapped_column(ForeignKey("profiles.id"), index=True)
+    name: Mapped[dict] = mapped_column(JSON, default=dict)
+    equipment_type: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    exercise_ids: Mapped[list] = mapped_column(JSON, default=list)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
 
 class GymMembership(Base):
