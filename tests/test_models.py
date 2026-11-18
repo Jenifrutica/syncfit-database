@@ -291,3 +291,21 @@ def test_option_meta_and_athlete_machine(tmp_path):
     with db.session_scope() as session:
         assert session.query(AppOption).filter_by(value="MOBILITY").one().meta == {"sets": 2, "reps": 15}
         assert session.query(AthleteMachine).one().name == {"es": "Prensa vieja"}
+
+
+def test_capture_job_round_trip(tmp_path):
+    from syncfit_database import CaptureJob, Database, User
+
+    db = Database(f"sqlite:///{tmp_path / 'jobs.db'}")
+    db.init_db()
+    with db.session_scope() as session:
+        user = User(email="j@x.dev", password_hash="x", display_name="J", role="ATHLETE")
+        session.add(user)
+        session.flush()
+        session.add(CaptureJob(request_id="req-12345678", user_id=user.id))
+    with db.session_scope() as session:
+        job = session.get(CaptureJob, "req-12345678")
+        assert job.status == "PENDING" and job.result is None
+        job.status, job.result = "DONE", {"routine": [1]}
+    with db.session_scope() as session:
+        assert session.get(CaptureJob, "req-12345678").result == {"routine": [1]}
