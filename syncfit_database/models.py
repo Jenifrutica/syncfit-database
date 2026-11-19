@@ -93,6 +93,7 @@ class Profile(Base):
     loads: Mapped[list["ExerciseLoad"]] = relationship(
         back_populates="profile", cascade="all, delete-orphan"
     )
+    gym_deletion_notices: Mapped[list["GymDeletionNotice"]] = relationship(cascade="all, delete-orphan")
     memberships: Mapped[list["GymMembership"]] = relationship(
         back_populates="profile", cascade="all, delete-orphan"
     )
@@ -350,6 +351,19 @@ class AthleteMachine(Base):
     name: Mapped[dict] = mapped_column(JSON, default=dict)
     equipment_type: Mapped[str | None] = mapped_column(String(20), nullable=True)
     exercise_ids: Mapped[list] = mapped_column(JSON, default=list)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class GymDeletionNotice(Base):
+    """Pending notice retained after the gym and its memberships are removed."""
+
+    __tablename__ = "gym_deletion_notices"
+    __table_args__ = (UniqueConstraint("profile_id", "gym_id", name="uq_gym_deletion_notice"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    profile_id: Mapped[str] = mapped_column(ForeignKey("profiles.id"), index=True)
+    gym_id: Mapped[str] = mapped_column(String(36))
+    gym_name: Mapped[str] = mapped_column(String(120))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
 
