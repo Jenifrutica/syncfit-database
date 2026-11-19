@@ -26,3 +26,16 @@ def test_session_scope_commits_on_success_and_rolls_back_on_error(tmp_path):
     with db.session_scope() as session:
         emails = {user.email for user in session.query(User).all()}
     assert emails == {"kept@example.com"}
+
+
+def test_init_db_twice_adds_nothing_the_second_time(tmp_path):
+    db = make_db(tmp_path)
+    assert db.init_db() == []
+
+
+def test_get_database_reuses_the_instance_until_the_url_changes(tmp_path):
+    first = get_database(f"sqlite:///{tmp_path}/a.db")
+    assert get_database() is first
+    assert get_database(first.url) is first
+    second = get_database(f"sqlite:///{tmp_path}/b.db")
+    assert second is not first and second.url.endswith("b.db")
