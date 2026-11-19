@@ -10,6 +10,7 @@ from .database import Database, get_database
 from .models import (
     AthleteMachine,
     CaptureJob,
+    SensorReading,
     AppOption,
     CatalogItem,
     CycleLog,
@@ -34,6 +35,7 @@ __version__ = "0.1.0"
 __all__ = [
     "AthleteMachine",
     "CaptureJob",
+    "SensorReading",
     "__version__",
     "Base",
     "Database",

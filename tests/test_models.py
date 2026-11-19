@@ -309,3 +309,18 @@ def test_capture_job_round_trip(tmp_path):
         job.status, job.result = "DONE", {"routine": [1]}
     with db.session_scope() as session:
         assert session.get(CaptureJob, "req-12345678").result == {"routine": [1]}
+
+
+def test_sensor_reading_round_trip(tmp_path):
+    from syncfit_database import Database, SensorReading, User
+
+    db = Database(f"sqlite:///{tmp_path / 'sensors.db'}")
+    db.init_db()
+    with db.session_scope() as session:
+        user = User(email="s@x.dev", password_hash="x", display_name="S", role="ATHLETE")
+        session.add(user)
+        session.flush()
+        session.add(SensorReading(user_id=user.id, heart_rate_bpm=72.0, peak_force_kg=18.5, temperature_c=35.1))
+    with db.session_scope() as session:
+        row = session.query(SensorReading).one()
+        assert (row.heart_rate_bpm, row.peak_force_kg, row.temperature_c, row.source) == (72.0, 18.5, 35.1, "device")

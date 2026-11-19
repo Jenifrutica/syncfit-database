@@ -405,3 +405,23 @@ class CaptureJob(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
+
+class SensorReading(Base):
+    """One check-in of the prototype for an athlete (pulse, peak push, temperature).
+
+    The history gives each athlete her own references: usual resting pulse and
+    temperature (medians) and her best isometric push (strength reference), so
+    the routine reacts to how today compares with her, not with a population.
+    Only real device readings are stored; simulated check-ins are not.
+    """
+
+    __tablename__ = "sensor_readings"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, index=True)
+    source: Mapped[str] = mapped_column(String(12), default="device")
+    heart_rate_bpm: Mapped[float | None] = mapped_column(Float, nullable=True)
+    peak_force_kg: Mapped[float | None] = mapped_column(Float, nullable=True)
+    temperature_c: Mapped[float | None] = mapped_column(Float, nullable=True)
+
