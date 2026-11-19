@@ -324,3 +324,19 @@ def test_sensor_reading_round_trip(tmp_path):
     with db.session_scope() as session:
         row = session.query(SensorReading).one()
         assert (row.heart_rate_bpm, row.peak_force_kg, row.temperature_c, row.source) == (72.0, 18.5, 35.1, "device")
+
+
+def test_supplement_intake_servings(tmp_path):
+    from datetime import date
+
+    from syncfit_database import Database, SupplementIntake, User
+
+    db = Database(f"sqlite:///{tmp_path / 'intake.db'}")
+    db.init_db()
+    with db.session_scope() as session:
+        user = User(email="i@x.dev", password_hash="x", display_name="I", role="ATHLETE")
+        session.add(user)
+        session.flush()
+        session.add(SupplementIntake(user_id=user.id, supplement_id="whey-protein", date=date(2026, 11, 19), taken=True, servings=2))
+    with db.session_scope() as session:
+        assert session.query(SupplementIntake).one().servings == 2

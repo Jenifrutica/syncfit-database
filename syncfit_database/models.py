@@ -244,6 +244,8 @@ class SupplementIntake(Base):
     supplement_id: Mapped[str] = mapped_column(String(80))
     date: Mapped[date] = mapped_column(Date, index=True)
     taken: Mapped[bool] = mapped_column(default=False)
+    # How many servings that day (e.g. two scoops of whey). Null = 1 (old rows).
+    servings: Mapped[int | None] = mapped_column(Integer, nullable=True, default=1)
 
 class ShareLink(Base):
     __tablename__ = "share_links"
