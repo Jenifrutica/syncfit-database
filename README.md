@@ -1,5 +1,7 @@
 # SyncFit Database
 
+**Live app:** https://syncfit.jenilarper.dev
+
 Persistence schema and models for SyncFit Edge. **PostgreSQL** in production,
 **SQLite** for local development and tests, via SQLAlchemy 2.0. This package is
 the single definition of the schema shared by the backend and any other service.
